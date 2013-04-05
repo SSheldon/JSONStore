@@ -7,6 +7,8 @@
 
 #import "NSManagedObject+JSON.h"
 
+#import "Base64.h"
+
 @implementation NSManagedObject (JSON)
 
 + (NSString *)JSONStringForObjectID:(NSManagedObjectID *)objectID {
@@ -35,6 +37,8 @@
   switch (attribute.attributeType) {
     case NSDateAttributeType:
       return [NSNumber numberWithDouble:[(NSDate *)value timeIntervalSince1970]];
+    case NSBinaryDataAttributeType:
+      return [(NSData *)value base64EncodedString];
   }
 
   return value;
