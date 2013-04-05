@@ -21,6 +21,15 @@
   return nil;
 }
 
+- (NSDictionary *)JSONDictionaryForObjectWithEntityName:(NSString *)name IDString:(NSString *)idString {
+  return nil;
+}
+
+- (NSDictionary *)JSONDictionaryForObjectWithID:(NSManagedObjectID *)objectID {
+  return [self JSONDictionaryForObjectWithEntityName:objectID.entity.name
+                                            IDString:[self referenceObjectForObjectID:objectID]];
+}
+
 - (id)executeFetchRequest:(NSFetchRequest *)request
               withContext:(NSManagedObjectContext *)context
                     error:(NSError **)error {
@@ -55,6 +64,27 @@
       return [self executeFetchRequest:(NSFetchRequest *)request withContext:context error:error];
   }
   return nil;
+}
+
+- (NSIncrementalStoreNode *)newValuesForObjectWithID:(NSManagedObjectID *)objectID
+                                         withContext:(NSManagedObjectContext *)context
+                                               error:(NSError **)error {
+  NSDictionary *json = [self JSONDictionaryForObjectWithID:objectID];
+  if (!json) {
+    return nil;
+  }
+  return [[NSIncrementalStoreNode alloc] initWithObjectID:objectID withValues:json version:1];
+}
+
+- (id)newValueForRelationship:(NSRelationshipDescription *)relationship
+              forObjectWithID:(NSManagedObjectID *)objectID
+                  withContext:(NSManagedObjectContext *)context
+                        error:(NSError **)error {
+  if (relationship.isToMany) {
+    return [NSArray array];
+  } else {
+    return [NSNull null];
+  }
 }
 
 @end

@@ -13,5 +13,6 @@
 + (NSString *)storeType;
 
 - (NSArray *)IDStringsForObjectsWithEntityName:(NSString *)name;
+- (NSDictionary *)JSONDictionaryForObjectWithEntityName:(NSString *)name IDString:(NSString *)idString;
 
 @end
