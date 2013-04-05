@@ -1,0 +1,3 @@
+[submodule "Base64"]
+	path = Base64
+	url = git://github.com/nicklockwood/Base64.git
