@@ -10,5 +10,6 @@
 @interface NSDictionary (JSON)
 
 - (id)objectMaybeNilForKey:(id)key;
+- (NSDate *)dateForKey:(id)key;
 
 @end

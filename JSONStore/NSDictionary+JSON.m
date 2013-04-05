@@ -14,4 +14,9 @@
   return ([object isEqual:[NSNull null]] ? nil : object);
 }
 
+- (NSDate *)dateForKey:(id)key {
+  NSNumber *value = [self objectMaybeNilForKey:key];
+  return (!value ? nil : [NSDate dateWithTimeIntervalSince1970:[value doubleValue]]);
+}
+
 @end
