@@ -7,12 +7,14 @@
 
 #import "JSONStore.h"
 
-NSString * const JSONStoreType = @"JSON";
-
 @implementation JSONStore
 
 + (void)initialize {
-  [NSPersistentStoreCoordinator registerStoreClass:self forStoreType:JSONStoreType];
+  [NSPersistentStoreCoordinator registerStoreClass:self forStoreType:[self storeType]];
+}
+
++ (NSString *)storeType {
+  return NSStringFromClass(self);
 }
 
 #pragma mark - NSIncrementalStore
@@ -20,7 +22,7 @@ NSString * const JSONStoreType = @"JSON";
 - (BOOL)loadMetadata:(NSError **)error {
   self.metadata = @{
     NSStoreUUIDKey: [[NSProcessInfo processInfo] globallyUniqueString],
-    NSStoreTypeKey: JSONStoreType,
+    NSStoreTypeKey: [[self class] storeType],
   };
   return YES;
 }
