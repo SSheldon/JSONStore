@@ -6,6 +6,7 @@
 //
 
 #import "JSONStore.h"
+#import "NSDictionary+JSON.h"
 
 @implementation JSONStore
 
@@ -69,11 +70,62 @@
 - (NSIncrementalStoreNode *)newValuesForObjectWithID:(NSManagedObjectID *)objectID
                                          withContext:(NSManagedObjectContext *)context
                                                error:(NSError **)error {
+  // Get the JSON dict for this object
   NSDictionary *json = [self JSONDictionaryForObjectWithID:objectID];
   if (!json) {
     return nil;
   }
-  return [[NSIncrementalStoreNode alloc] initWithObjectID:objectID withValues:json version:1];
+
+  // Get values of the object's attributes from the JSON dict
+  NSMutableDictionary *values = [NSMutableDictionary dictionary];
+  NSDictionary *attributes = objectID.entity.attributesByName;
+
+  for (NSString *name in attributes) {
+    NSAttributeDescription *attribute = [attributes objectForKey:name];
+    // Ignore transient attributes
+    if (attribute.isTransient) continue;
+
+    id value = [json objectMaybeNilForKey:name];
+    if (!value) {
+      if (attribute.isOptional) continue;
+      // TODO(ssheldon): set an error for missing required attributes
+      return nil;
+    }
+
+    // Perform any necessary conversion from JSON representations
+    switch (attribute.attributeType) {
+      case NSDateAttributeType:
+        if (![value isKindOfClass:[NSNumber class]]) {
+          // TODO(ssheldon): set an error for invalid type for date
+          return nil;
+        }
+        value = [NSDate dateWithTimeIntervalSince1970:[value doubleValue]];
+        break;
+      case NSStringAttributeType:
+        if (![value isKindOfClass:[NSString class]]) {
+          // TODO(ssheldon): set an error for invalid type for string
+          return nil;
+        }
+        break;
+      case NSInteger16AttributeType:
+      case NSInteger32AttributeType:
+      case NSInteger64AttributeType:
+      case NSDoubleAttributeType:
+      case NSFloatAttributeType:
+      case NSBooleanAttributeType:
+        if (![value isKindOfClass:[NSNumber class]]) {
+          // TODO(ssheldon): set an error for invalid type for number
+          return nil;
+        }
+      default:
+        // TODO(ssheldon): set an error for unsupported attribute type
+        return nil;
+    }
+
+    [values setObject:value forKey:name];
+  }
+
+  return [[NSIncrementalStoreNode alloc] initWithObjectID:objectID withValues:values version:1];
 }
 
 - (id)newValueForRelationship:(NSRelationshipDescription *)relationship
